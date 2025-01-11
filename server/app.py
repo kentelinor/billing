@@ -13,7 +13,7 @@ CORS(app)
 # RabbitMQ configuration
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST', 'rabbitmq')  # Default to 'rabbitmq'
 S3_QUEUE_NAME = os.getenv('S3_QUEUE_NAME', 's3_queue')  # Default to 'my_queue'
-S3_QUEUE_NAME = os.getenv('VM_HANDLER_QUEUE_NAME', 'vm_handler_queue')  # Default to 'my_queue'
+VM_HANDLER_QUEUE_NAME = os.getenv('VM_HANDLER_QUEUE_NAME', 'vm_handler_queue')  # Default to 'my_queue'
 
 
 logging.basicConfig(
@@ -55,12 +55,12 @@ def publish_to_rabbitmq(message):
             properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
         )
          # Declare the queue (idempotent operation)
-        channel.queue_declare(queue=S3_QUEUE_NAME, durable=True)
+        channel.queue_declare(queue=VM_HANDLER_QUEUE_NAME, durable=True)
 
         # Publish the message to the queue
         channel.basic_publish(
             exchange='',
-            routing_key=S3_QUEUE_NAME,
+            routing_key=VM_HANDLER_QUEUE_NAME,
             body=json.dumps(message),
             properties=pika.BasicProperties(delivery_mode=2)  # Make message persistent
         )

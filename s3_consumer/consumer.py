@@ -1,7 +1,7 @@
 import os
 import json
 import logging
-import threading
+import multiprocessing
 import pika
 import boto3
 import requests
@@ -73,7 +73,7 @@ def callback(ch, method, properties, body):
     ch.basic_ack(delivery_tag=method.delivery_tag)
 
 def consume_messages():
-    """Consume messages from RabbitMQ in a separate thread."""
+    """Consume messages from RabbitMQ in a separate process."""
     try:
         connection = pika.BlockingConnection(pika.ConnectionParameters(host=RABBITMQ_HOST))
         channel = connection.channel()
@@ -83,7 +83,7 @@ def consume_messages():
         logger.info(f"Waiting for messages in {QUEUE_NAME}. To exit press CTRL+C")
         channel.start_consuming()
     except Exception as e:
-        logger.error(f"Error in consumer thread: {e}")
+        logger.error(f"Error in consumer process: {e}")
 
 # Health check endpoint
 @app.route("/health", methods=["GET"])
@@ -91,13 +91,16 @@ def health_check():
     """Endpoint to check if the service is running."""
     return jsonify({"status": "healthy", "message": "Consumer service is running"}), 200
 
-# Start message consumer in a background thread
-@app.before_first_request
-def start_consumer_thread():
-    """Start the RabbitMQ consumer thread before the first request."""
-    consumer_thread = threading.Thread(target=consume_messages, daemon=True)
-    consumer_thread.start()
+# Start message consumer in a background process
+def start_consumer_process():
+    """Start the RabbitMQ consumer in a separate process."""
+    consumer_process = multiprocessing.Process(target=consume_messages, daemon=True)
+    consumer_process.start()
+    logger.info("Started RabbitMQ consumer process")
 
 if __name__ == "__main__":
+    # Start the consumer process before the Flask app starts
+    start_consumer_process()
+
     # Run the Flask app on port 4000
     app.run(host="0.0.0.0", port=SERVER_PORT)
