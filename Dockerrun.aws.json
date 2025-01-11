@@ -1,0 +1,74 @@
+AWSEBDockerrunVersion: 2
+containerDefinitions:
+  - name: rabbitmq
+    image: rabbitmq:3-management
+    memory: 256
+    portMappings:
+      - containerPort: 5672
+        hostPort: 5672
+      - containerPort: 15672
+        hostPort: 15672
+    environment:
+      - name: RABBITMQ_DEFAULT_USER
+        value: guest
+      - name: RABBITMQ_DEFAULT_PASS
+        value: guest
+    healthCheck:
+      command: ["CMD-SHELL", "rabbitmq-diagnostics ping"]
+      interval: 10
+      timeout: 5
+      retries: 5
+
+  - name: flask_server
+    image: 211125342837.dkr.ecr.us-east-1.amazonaws.com/flask_server:latest
+    memory: 512
+    portMappings:
+      - containerPort: 5000
+        hostPort: 5000
+    links:
+      - rabbitmq
+    environment:
+      - name: RABBITMQ_HOST
+        value: rabbitmq
+      - name: QUEUE_NAME
+        value: my_queue
+    healthCheck:
+      command: ["CMD-SHELL", "curl -f http://localhost:5000/healthcheck || exit 1"]
+      interval: 10
+      timeout: 2
+      retries: 5
+
+  - name: flask_client
+    image: 211125342837.dkr.ecr.us-east-1.amazonaws.com/flask_client:latest
+    memory: 256
+    links:
+      - flask_server
+    environment:
+      - name: FLASK_SERVER_URL
+        value: http://server:5000
+
+  - name: rabbitmq_consumer
+    image: 211125342837.dkr.ecr.us-east-1.amazonaws.com/rabbitmq_consumer:latest
+    memory: 256
+    links:
+      - rabbitmq
+    environment:
+      - name: RABBITMQ_HOST
+        value: rabbitmq
+      - name: QUEUE_NAME
+        value: my_queue
+      - name: AWS_S3_BUCKET_NAME
+        value: elinor
+      - name: AWS_REGION
+        value: eu-north-1
+      - name: SYSTEM_ENDPOINT_URL
+        value: http://system-endpoint-url
+      - name: AWS_ACCESS_KEY_ID
+        value: AKIATCKANCJ2VCBDQZ77
+      - name: AWS_SECRET_ACCESS_KEY
+        value: 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
+    healthCheck:
+      command: ["CMD-SHELL", "curl -f http://localhost || exit 1"]
+      interval: 10
+      timeout: 2
+      retries: 5
