@@ -57,8 +57,7 @@ services:
       - AWS_S3_BUCKET_NAME=elinor
       - AWS_REGION=eu-north-1
       - SYSTEM_ENDPOINT_URL=http://system-endpoint-url
-      - AWS_ACCESS_KEY_ID=AKIATCKANCJ2VCBDQZ77
-      - AWS_SECRET_ACCESS_KEY=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
+
     depends_on:
       rabbitmq:
         condition: service_healthy
