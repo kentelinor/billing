@@ -90,5 +90,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+    env_file:
+    - .env 
     
 
