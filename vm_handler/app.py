@@ -7,8 +7,11 @@ import logging
 import psycopg2
 from datetime import datetime
 import os
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -92,6 +95,48 @@ def consume_messages():
         except Exception as e:
             logger.error(f"Error consuming messages: {e}")
             break  # Stop the loop if other errors occur
+def get_all_events():
+    """Retrieve all events from the database"""
+    try:
+        # Connect to the database
+        conn = psycopg2.connect(**db_config)
+        cursor = conn.cursor()
+
+        # SQL query to fetch all events
+        select_query = "SELECT vm_name, event, created_at FROM vm_events;"
+        cursor.execute(select_query)
+
+        # Fetch all rows from the result
+        rows = cursor.fetchall()
+
+        # Convert the result into a list of dictionaries
+        events = []
+        for row in rows:
+            events.append({
+                "vm_name": row[0],
+                "event": row[1],
+                "created_at": row[2].isoformat()  # Convert datetime to ISO format
+            })
+
+        return events
+
+    except Exception as e:
+        logger.error(f"Error retrieving events: {e}")
+        return []
+
+    finally:
+        # Close the connection
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
+
+# Route to get all events
+@app.route('/events', methods=['GET'])
+def get_events():
+    """Fetch and return all events from the database in JSON format"""
+    events = get_all_events()
+    return jsonify(events), 200
 
 # Health check route
 @app.route('/health', methods=['GET'])
@@ -109,4 +154,4 @@ if __name__ == '__main__':
     consumer_thread.start()
 
     # Run the Flask app on port 6000
-    app.run(host="0.0.0.0", port=6000)
+    app.run(host="0.0.0.0", port=8000)

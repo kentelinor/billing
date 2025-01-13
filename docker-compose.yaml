@@ -83,10 +83,10 @@ services:
 
   vm_handler:
     build:
-      context: ./vm_handler  # Path to your React app directory
+      context: ./vm_handler  
     container_name: vm_handler
     ports:
-      - "6000:6000"  # React app port
+      - "8000:8000"  
     depends_on:
       rabbitmq:
         condition: service_healthy
