@@ -24,7 +24,7 @@ redis_client = redis.StrictRedis(host="localhost", port=6379, db=0, decode_respo
 
 # PostgreSQL DB connection
 db_config = {
-    "host": "your_db_host",
+    "host": "readreplica1.cbgysoossqru.eu-north-1.rds.amazonaws.com",
     "port": 5432,
     "dbname": "vms",
     "user": "postgres",
