@@ -5,3 +5,4 @@
 !.elasticbeanstalk/*.global.yml
 .env
 vm_handler/myenv/
+verification/myenv/

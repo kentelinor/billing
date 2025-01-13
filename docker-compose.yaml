@@ -92,5 +92,18 @@ services:
         condition: service_healthy
     env_file:
     - .env 
+
+
+   verification:
+    build:
+      context: ./verification 
+    container_name: verification
+    ports:
+      - "7000:7000"  
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    env_file:
+    - .env 
     
 
