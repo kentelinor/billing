@@ -103,7 +103,20 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
+      redis:
+        condition: service_healthy  # Ensure Redis starts before verification service
+    environment:
+      - REDIS_HOST=redis  # Set Redis hostname for the verification service
+      - REDIS_PORT=6379  # Redis default port
     env_file:
-    - .env 
+      - .env 
+
+  redis:
+    image: "redis:alpine"  # Use a lightweight Redis image
+    container_name: redis
+    ports:
+      - "6379:6379"  # Expose Redis on port 6379
+    networks:
+      - default  # Ensure Redis is on the default network so other services can access i
     
 

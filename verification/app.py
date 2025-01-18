@@ -20,7 +20,8 @@ app.add_middleware(
 )
 
 # Redis connection
-redis_client = redis.StrictRedis(host="localhost", port=6379, db=0, decode_responses=True)
+r = redis.StrictRedis(host=os.getenv('REDIS_HOST', 'localhost'), port=int(os.getenv('REDIS_PORT', 6379)), db=0, decode_responses=True)
+
 
 # PostgreSQL DB connection
 db_config = {
